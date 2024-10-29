@@ -9,7 +9,19 @@
     <meta name="description" content="Dont read it" />
     <link rel="stylesheet" href="https://unpkg.com/papercss@1.9.2/dist/paper.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script>
+        function postString(text,date) {
+            const blueskyTextElement = document.getElementById("bluesky-text");
+            const blueskyDateElement = document.getElementById("bluesky-date");
+            blueskyTextElement.innerHTML = text;
+            blueskyDateElement.innerHTML = date.slice(0,10);
+        }
+        fetch('https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=did%3Aplc%3Aexx4pap6tpt2cfvxm2mborfx&filter=posts_and_author_threads&includePins=true&limit=1')
+            .then(response => response.json())
+            .then(data => postString(data["feed"][0]["post"]["record"]["text"],data["feed"][0]["post"]["record"]["createdAt"]));
+    </script>
 </head>
+
 
 <body>
     <section class="main-content">
@@ -81,10 +93,8 @@
                     <div class="block-large-left-bottom-right">
                         <div class="block-large-left-bottom-right-top border border-4">
                             <h3>Things I personally want to say:</h2>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas sollicitudin risus
-                                    vel blandit bibendum. Suspendisse in dapibus neque. Pellentesque vel egestas leo.
-                                    Praesent lorem eros, consectetur at diam nec, aliquam sodales nisi.</p>
-                                <span>12.12.2024</span>
+                                <p id="bluesky-text">Somehow there is no connection to my BlueSkyFeeds</p>
+                                <span id="bluesky-date">XX.XX.XXXX</span>
                         </div>
                         <div class="block-large-left-bottom-right-bottom">
                             <a href="https://www.reddit.com" target="_blank"
@@ -350,6 +360,9 @@
                                 width: 528px;
                                 height: 241px;
                                 padding: 15px;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: space-between;
                             }
 
                             .block-large-left-bottom-right-bottom {
