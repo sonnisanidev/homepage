@@ -10,15 +10,75 @@
     <link rel="stylesheet" href="https://unpkg.com/papercss@1.9.2/dist/paper.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script>
-        function postString(text,date) {
+        function postString(text, date) {
             const blueskyTextElement = document.getElementById("bluesky-text");
             const blueskyDateElement = document.getElementById("bluesky-date");
             blueskyTextElement.innerHTML = text;
-            blueskyDateElement.innerHTML = date.slice(0,10);
+            blueskyDateElement.innerHTML = date.slice(0, 10);
         }
         fetch('https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=did%3Aplc%3Aexx4pap6tpt2cfvxm2mborfx&filter=posts_and_author_threads&includePins=true&limit=1')
             .then(response => response.json())
-            .then(data => postString(data["feed"][0]["post"]["record"]["text"],data["feed"][0]["post"]["record"]["createdAt"]));
+            .then(data => postString(data["feed"][0]["post"]["record"]["text"], data["feed"][0]["post"]["record"]["createdAt"]));
+        function cleanRepoName(name) {
+            return name.replace('sonnisanidev/', '');
+        }
+
+        function displayRepoLinks(repos) {
+            const myElement = document.getElementById("github-bot");
+            if (!myElement) {
+                console.error("Element with id 'github-bot' not found");
+                return;
+            }
+
+            myElement.innerHTML = '';
+
+            repos.forEach(repo => {
+                const a = document.createElement('a');
+                a.href = repo.url; // Use the 'url' property from the response
+                a.textContent = repo.name.replace('sonnisanidev/', '');
+                a.className = "github-links border border-primary shadow shadow-hover";
+                a.style.display = "block";
+                a.style.marginBottom = "10px";
+                a.target = "_blank"; // This makes the link open in a new tab
+                a.rel = "noopener noreferrer"; // This is a security best practice when using target="_blank"
+                myElement.appendChild(a);
+            });
+        }
+
+
+
+
+        function fetchRepos() {
+            const myElement = document.getElementById("github-bot");
+            if (myElement) {
+                myElement.innerHTML = '<a class="github-links border border-primary shadow shadow-hover">Still thinking...</a>';
+            }
+
+            fetch('https://github-bot-yr7x.onrender.com/repos')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.repositories && Array.isArray(data.repositories)) {
+                        displayRepoLinks(data.repositories);
+                    } else {
+                        throw new Error('Unexpected data format');
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    if (myElement) {
+                        myElement.innerHTML = `<a class="github-links border border-primary shadow shadow-hover">Error: ${error.message}</a>`;
+                    }
+                });
+        }
+
+        // Call the function to start the process
+        fetchRepos();
+
     </script>
 </head>
 
@@ -33,20 +93,21 @@
                         <h3 class="header-about-me">Some Infos About Me:</h3>
                         <div class="about-me-name">
                             <h5>Name:</h5>
-                            <p>Sonni Sani</p>
+                            <p class="about-me-name--name">Sonni Sani</p>
                         </div>
                         <div class="about-me-age">
                             <h5>Age:</h5>
-                            <p>26</p>
+                            <p class="about-me-age--age">26</p>
                         </div>
                         <div class="about-me-hobby">
                             <h5>Like, Hobby, etc:</h5>
-                            <p>Things I like and things I hate… I don't feel like telling you that. My dreams for the
+                            <p class="about-me-hobby--hobby">Things I like and things I hate… I don't feel like telling
+                                you that. My dreams for the
                                 future… never really thought about it. As for my hobbies… I have lots of hobbies.</p>
                         </div>
                         <div class="about-me-target">
                             <h5>Target:</h5>
-                            <p>Be Happy</p>
+                            <p class="about-me-target--description">Be Happy</p>
                         </div>
 
                     </div>
@@ -81,14 +142,9 @@
                 <div class="block-large-left-bottom">
                     <div class="block-large-left-bottom-left">
                         <h3 class="woinpro">WoInPro:</h3>
-                        <a class="github-links border border-primary shadow shadow-hover">This Homepage</a>
-                        <a class="github-links border border-primary shadow shadow-hover">Still thinking...</a>
-                        <a class="github-links border border-primary shadow shadow-hover">Still thinking...</a>
-                        <a class="github-links border border-primary shadow shadow-hover">Still thinking...</a>
-                        <a class="github-links border border-primary shadow shadow-hover">Still thinking...</a>
-                        <a class="github-links border border-primary shadow shadow-hover">Still thinking...</a>
-                        <a class="github-links border border-primary shadow shadow-hover">Still thinking...</a>
-                        <a class="github-links border border-primary shadow shadow-hover">Still thinking...</a>
+                        <div id="github-bot">
+                            Placeholder
+                        </div>
                     </div>
                     <div class="block-large-left-bottom-right">
                         <div class="block-large-left-bottom-right-top border border-4">
@@ -107,10 +163,10 @@
                                 <i class="icon bi-youtube"></i>
                                 <span>Youtube</span>
                             </a>
-                            <a href="https://www.webnovel.com" target="_blank"
+                            <a href="https://github.com/sonnisanidev" target="_blank"
                                 class="social-button border border-3 border-primary shadow shadow-hover">
-                                <i class="icon bi-book"></i>
-                                <span>Webnovel</span>
+                                <i class="icon bi bi-github"></i>
+                                <span>Github</span>
                             </a>
                         </div>
                     </div>
@@ -337,7 +393,7 @@
                             height: 372px;
                             display: flex;
                             flex-direction: column;
-                            justify-content: space-between;
+                            justify-content: flex-start;
 
                             .woinpro {}
 
@@ -532,10 +588,11 @@
                             flex-direction: column;
                             min-width: 30%;
                             margin-right: 5px;
+
                             .github-links {
-                                padding : 5px;
+                                padding: 5px;
                                 margin-bottom: 5px;
-                                color : var(--white);
+                                color: var(--white);
                             }
                         }
 
@@ -548,13 +605,15 @@
                             .block-large-left-bottom-right-top {
                                 padding: 10px;
                             }
+
                             .block-large-left-bottom-right-bottom {
                                 display: flex;
+
                                 .social-button {
                                     display: block;
                                     width: 33%;
                                     padding: 15px;
-                                    margin : 2px;
+                                    margin: 2px;
                                 }
                             }
                         }

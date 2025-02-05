@@ -18,8 +18,71 @@
     fetch('https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=did%3Aplc%3Avtf6s5e4k5hsd2buyn76wd3s&filter=posts_and_author_threads&includePins=true&limit=1')
         .then(response => response.json())
         .then(data => postString(data["feed"][0]["post"]["record"]["text"]));
+
+    function cleanRepoName(name) {
+        return name.replace('sonnisanidev/', '');
+    }
+
+    function displayRepoLinks(repos) {
+        const myElement = document.getElementById("github-bot");
+        if (!myElement) {
+            console.error("Element with id 'github-bot' not found");
+            return;
+        }
+
+        myElement.innerHTML = '';
+
+        repos.forEach(repo => {
+            const a = document.createElement('a');
+            a.href = repo.url; // Use the 'url' property from the response
+            a.textContent = repo.name.replace('sonnisanidev/', '');
+            a.className = "github-links border border-primary shadow shadow-hover";
+            a.style.display = "block";
+            a.style.marginBottom = "10px";
+            a.target = "_blank"; // This makes the link open in a new tab
+            a.rel = "noopener noreferrer"; // This is a security best practice when using target="_blank"
+            myElement.appendChild(a);
+        });
+    }
+
+
+
+
+    function fetchRepos() {
+        const myElement = document.getElementById("github-bot");
+        if (myElement) {
+            myElement.innerHTML = '<a class="github-links border border-primary shadow shadow-hover">Still thinking...</a>';
+        }
+
+        fetch('https://github-bot-yr7x.onrender.com/repos')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.repositories && Array.isArray(data.repositories)) {
+                    displayRepoLinks(data.repositories);
+                } else {
+                    throw new Error('Unexpected data format');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                if (myElement) {
+                    myElement.innerHTML = `<a class="github-links border border-primary shadow shadow-hover">Error: ${error.message}</a>`;
+                }
+            });
+    }
+
+    // Call the function to start the process
+    fetchRepos();
+
+
 </script>
 
 <body>
     <h1 id="demo">Test</h1>
+    <div id="github-bot">Still thinking...</div>
 </body>
